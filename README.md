@@ -11,6 +11,58 @@
 
 Production-ready custom HTML in-app message templates for Braze, built with best practices including proper bridge integration (`brazeBridge` + `ab.BridgeReady`), responsive design, and easy customization.
 
+### ⚠️ Important Disclaimer
+
+**Please test thoroughly before production use!** These templates may require adjustments depending on:
+- Your app's WebView implementation
+- Your website's security policies (CSP, CORS)
+- Mobile OS versions and browser capabilities
+- Braze SDK version and configuration
+
+We strongly recommend testing in Braze's test mode on real devices across different platforms (iOS/Android) before launching campaigns.
+
+### 🤖 Customizing with AI (Claude Code)
+
+These templates are designed to be easily customized using AI assistants like Claude Code. All customizable sections are marked with `/* CUSTOMIZABLE */` comments in Korean for easy AI understanding.
+
+**Example prompts you can use:**
+
+```
+"Change button text to 'Get Started' and update the URL"
+"Add 3 more prize tiers with different probabilities"
+"Make the scratch threshold 60% instead of 50%"
+"Change all colors to match our brand (#FF6B6B)"
+"Add a countdown timer showing 24 hours remaining"
+```
+
+**Tips for AI-assisted customization:**
+1. **Be specific** - Provide exact values (colors, URLs, text)
+2. **Test incrementally** - Make one change at a time and test
+3. **Provide context** - Share your brand guidelines or design requirements
+4. **Ask for explanations** - Have AI explain what each change does
+5. **Request validation** - Ask AI to review for potential issues
+
+### 🏢 About
+
+These templates are created and maintained by **[Retention Inc.](https://retn.kr/)**, a growth consulting startup specializing in mobile marketing and retention strategies.
+
+**Created by**: Sim Gyusup, CEO of Retention Inc.
+- Non-developer who has been using Braze since 2016
+- Built these templates from hands-on experience with real campaigns
+- Focused on practical, production-ready solutions for marketers
+
+**🇰🇷 Korean Braze Clients Welcome!**
+
+We're always looking to connect with Korean companies using Braze. If you need help with:
+- Braze implementation and optimization
+- Custom in-app message development
+- Growth marketing strategy
+- Retention and engagement campaigns
+
+**Contact us:**
+- 🌐 Website: [retn.kr](https://retn.kr/)
+- 📅 Book a call: [30-minute consultation](https://tidycal.com/simgyusup/30m)
+
 ### ✨ Features
 
 - ✅ **Modern Braze Bridge API** - Uses `brazeBridge` with proper `ab.BridgeReady` event handling
@@ -169,6 +221,58 @@ Contributions welcome! Please:
 ### 📱 개요
 
 Braze용 프로덕션 레디 커스텀 HTML 인앱 메시지 템플릿입니다. 최신 브리지 통합(`brazeBridge` + `ab.BridgeReady`), 반응형 디자인, 쉬운 커스터마이징 등 모범 사례를 적용했습니다.
+
+### ⚠️ 중요 안내사항
+
+**프로덕션 사용 전 반드시 테스트하세요!** 다음 요인에 따라 템플릿 조정이 필요할 수 있습니다:
+- 앱의 WebView 구현 방식
+- 웹사이트 보안 정책 (CSP, CORS)
+- 모바일 OS 버전 및 브라우저 기능
+- Braze SDK 버전 및 설정
+
+캠페인 런칭 전, 반드시 Braze 테스트 모드에서 실제 기기(iOS/Android)로 테스트할 것을 강력히 권장합니다.
+
+### 🤖 AI로 커스터마이징하기 (Claude Code)
+
+이 템플릿들은 Claude Code 같은 AI 어시스턴트로 쉽게 커스터마이징할 수 있도록 설계되었습니다. 모든 커스터마이징 가능한 섹션은 AI가 이해하기 쉽도록 한국어 `/* CUSTOMIZABLE */` 주석으로 표시되어 있습니다.
+
+**사용 가능한 프롬프트 예시:**
+
+```
+"버튼 텍스트를 '시작하기'로 바꾸고 URL 업데이트해줘"
+"확률이 다른 프라이즈 등급 3개 더 추가해줘"
+"스크래치 임계값을 50% 대신 60%로 만들어줘"
+"모든 색상을 우리 브랜드 컬러(#FF6B6B)로 바꿔줘"
+"24시간 남은 카운트다운 타이머 추가해줘"
+```
+
+**AI 활용 커스터마이징 팁:**
+1. **구체적으로 요청** - 정확한 값(색상, URL, 텍스트) 제공
+2. **점진적 테스트** - 한 번에 하나씩 변경하고 테스트
+3. **맥락 제공** - 브랜드 가이드라인이나 디자인 요구사항 공유
+4. **설명 요청** - AI에게 각 변경사항이 무엇을 하는지 설명 요청
+5. **검증 요청** - AI에게 잠재적 문제 검토 요청
+
+### 🏢 소개
+
+이 템플릿은 모바일 마케팅 및 리텐션 전략 전문 그로스 컨설팅 스타트업 **[리텐션 주식회사](https://retn.kr/)**에서 제작 및 관리합니다.
+
+**제작자**: 심규섭, 리텐션 주식회사 대표
+- 2016년부터 Braze를 사용해온 비개발자
+- 실제 캠페인 경험을 바탕으로 템플릿 제작
+- 마케터를 위한 실용적이고 프로덕션 레디 솔루션에 집중
+
+**🇰🇷 Braze 한국 클라이언트 환영합니다!**
+
+Braze를 사용하는 한국 기업과의 협업을 항상 환영합니다. 다음 분야에 도움이 필요하시면 연락주세요:
+- Braze 구현 및 최적화
+- 커스텀 인앱 메시지 개발
+- 그로스 마케팅 전략
+- 리텐션 및 인게이지먼트 캠페인
+
+**연락처:**
+- 🌐 웹사이트: [retn.kr](https://retn.kr/)
+- 📅 미팅 예약: [30분 무료 상담](https://tidycal.com/simgyusup/30m)
 
 ### ✨ 주요 기능
 
