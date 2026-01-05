@@ -1,0 +1,340 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, system-ui, sans-serif;
+            background: transparent;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* ============================================
+               CUSTOMIZABLE: 오버레이 배경색
+               ============================================
+               AI 요청 예시: "오버레이를 더 어둡게/밝게 만들어줘"
+               rgba(0,0,0,0.5) = 검정색 50% 투명
+               rgba(0,0,0,0.7) = 검정색 70% 투명 (더 어둡게)
+               rgba(0,0,0,0.3) = 검정색 30% 투명 (더 밝게)
+            */
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .overlay.visible {
+            opacity: 1
+        }
+        .modal {
+            width: 100%;
+            background: #fff;
+            /* ============================================
+               CUSTOMIZABLE: 모달 둥근 모서리
+               ============================================
+               AI 요청 예시: "모서리를 더 둥글게/덜 둥글게 만들어줘"
+               20px = 기본값
+               30px = 더 둥글게
+               10px = 덜 둥글게
+            */
+            border-radius: 20px 20px 0 0;
+            transform: translateY(100%);
+            transition: transform 0.3s;
+            overflow: hidden;
+        }
+        .overlay.visible .modal {
+            transform: translateY(0)
+        }
+        .swiper {
+            width: 100%;
+            /* ============================================
+               CUSTOMIZABLE: 캐러셀 높이
+               ============================================
+               AI 요청 예시: "캐러셀을 더 높게/낮게 만들어줘"
+               400px = 기본값
+               500px = 더 높게
+               300px = 더 낮게
+            */
+            height: 400px;
+            background: #eee;
+            border-radius: 20px 20px 0 0;
+            overflow: hidden;
+        }
+        .swiper-slide {
+            position: relative;
+            background: #fff;
+            overflow: hidden;
+        }
+        .swiper-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .page {
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            /* ============================================
+               CUSTOMIZABLE: 페이지 인디케이터 스타일
+               ============================================
+               AI 요청 예시: "페이지 번호를 다른 색으로 바꿔줘"
+            */
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            z-index: 10;
+        }
+        /* Footer Padding - Safe Area 제거 버전 */
+        .foot {
+            display: flex;
+            justify-content: space-between;
+            padding: 16px 20px;
+            /* iOS Safe Area 패딩 - 안드로이드 GNB에 가려진다면 아래 줄의 주석을 해제하세요 */
+            /* padding-bottom: calc(20px + env(safe-area-inset-bottom, 20px)); */
+            border-top: 1px solid #eee;
+            background: #fff;
+        }
+        .btn {
+            /* ============================================
+               CUSTOMIZABLE: 버튼 스타일
+               ============================================
+               AI 요청 예시: "버튼 글씨를 더 크게/작게 만들어줘"
+               "버튼에 배경색을 넣어줘"
+            */
+            font-size: 14px;
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            /* 배경색 추가 예시: background: #007AFF; color: white; border-radius: 8px; */
+        }
+        .debug-tag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: black;
+            color: white;
+            padding: 4px 8px;
+            font-size: 10px;
+            z-index: 9999;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="o" onclick="c('close_overlay')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="debug-tag">V5_EASY_CUSTOM</div>
+            <div class="swiper s">
+                <div class="swiper-wrapper" id="w"></div>
+                <div class="page" id="p">1/4</div>
+            </div>
+            <div class="foot">
+                <!-- ============================================
+                     CUSTOMIZABLE: 버튼 텍스트
+                     ============================================
+                     AI 요청 예시: "버튼 텍스트를 '다시 보지 않기'로 바꿔줘"
+                -->
+                <button class="btn" onclick="k()">오늘 하루 보지 않기</button>
+                <button class="btn" onclick="c('close_button')">닫기</button>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+        /* ============================================
+           CUSTOMIZABLE: 캐러셀 데이터 (이미지 + 링크)
+           ============================================
+           AI 요청 예시:
+           - "이미지 URL을 바꿔줘"
+           - "딥링크를 athlerab://product/999로 바꿔줘"
+           - "세 번째 슬라이드를 웹 링크로 바꿔줘"
+           - "슬라이드를 5개로 늘려줘"
+
+           데이터 구조:
+           {
+               "i": "이미지 URL (필수)",
+               "u": "링크 URL (필수)",
+               "t": "링크 타입 (선택) - 'deeplink' 또는 'web'"
+           }
+
+           링크 타입 설명:
+           - "deeplink": 앱 내부 딥링크 (예: athlerab://product/123)
+           - "web": 웹 브라우저로 열리는 링크 (예: https://example.com)
+           - 타입 생략 시: URL이 http로 시작하면 자동으로 web, 아니면 deeplink
+        */
+        var D = [
+            // 슬라이드 1: 앱 딥링크 예시
+            {
+                "i": "https://storage.googleapis.com/meta-main-catalog-creatives-20251209/roi-ideaA/v3b_compact_darkband_bigfont_4448550_v4.jpg",
+                "u": "athlerab://product/4448550",
+                "t": "deeplink"
+            },
+            // 슬라이드 2: 앱 딥링크 예시
+            {
+                "i": "https://storage.googleapis.com/meta-main-catalog-creatives-20251209/roi-ideaA/v3b_compact_darkband_bigfont_4629004_v4.jpg",
+                "u": "athlerab://product/4629004",
+                "t": "deeplink"
+            },
+            // 슬라이드 3: 웹 링크 예시
+            {
+                "i": "https://storage.googleapis.com/meta-main-catalog-creatives-20251209/roi-ideaA/v3b_compact_darkband_bigfont_4658882_v4.jpg",
+                "u": "https://www.example.com/promotion",
+                "t": "web"
+            },
+            // 슬라이드 4: 앱 딥링크 예시
+            {
+                "i": "https://storage.googleapis.com/meta-main-catalog-creatives-20251209/roi-ideaA/v3b_compact_darkband_bigfont_4460361_v4.jpg",
+                "u": "athlerab://product/4460361",
+                "t": "deeplink"
+            }
+            // 슬라이드 추가 방법: 위 형식으로 콤마(,) 추가 후 복사
+        ];
+
+        // Bridge ready flag
+        var bridgeReady = false;
+
+        // Braze Bridge Ready Event
+        window.addEventListener("ab.BridgeReady", function() {
+            bridgeReady = true;
+        }, false);
+
+        // Close message with click tracking
+        function c(btnId) {
+            if (bridgeReady && window.brazeBridge) {
+                brazeBridge.logClick(btnId);
+                brazeBridge.closeMessage();
+            } else if (window.appboyBridge) {
+                // Fallback for older SDK
+                appboyBridge.logClick(btnId);
+                appboyBridge.closeMessage();
+            } else {
+                // Preview mode fallback
+                document.getElementById("o").classList.remove("visible");
+            }
+        }
+
+        // Suppress today with click tracking
+        function k() {
+            if (bridgeReady && window.brazeBridge) {
+                brazeBridge.logClick("suppress_today");
+            } else if (window.appboyBridge) {
+                appboyBridge.logClick("suppress_today");
+            }
+            try {
+                localStorage.setItem("bsk", new Date().toDateString())
+            } catch (e) { }
+            c("suppress_today_close");
+        }
+
+        // Slide click with tracking and link type detection
+        function s(idx, url, type) {
+            var btnId = "slide_" + (idx + 1);
+            if (bridgeReady && window.brazeBridge) {
+                brazeBridge.logClick(btnId);
+            } else if (window.appboyBridge) {
+                appboyBridge.logClick(btnId);
+            }
+
+            if (url) {
+                // 링크 타입이 지정되지 않았으면 URL로 자동 판단
+                if (!type) {
+                    type = (url.indexOf('http') === 0) ? 'web' : 'deeplink';
+                }
+
+                // 웹 링크는 새 창으로, 딥링크는 현재 창으로
+                if (type === 'web') {
+                    window.open(url, '_blank');
+                } else {
+                    window.location.href = url;
+                }
+            }
+        }
+
+        // Initialize
+        (function () {
+            // 안드로이드 Safe Area 패딩 - GNB에 가려진다면 아래 주석을 해제하세요
+            /*
+            var isAndroid = /Android/i.test(navigator.userAgent);
+            var foot = document.querySelector(".foot");
+            if (isAndroid && foot) {
+                foot.style.paddingBottom = "56px";
+            }
+            */
+
+            // Build slides
+            var w = document.getElementById("w");
+            for (var i = 0; i < D.length; i++) {
+                var d = document.createElement("div");
+                d.className = "swiper-slide";
+                d.innerHTML = '<img src="' + D[i].i + '">';
+                // Closure for click handler with index and type
+                (function (idx, u, t) {
+                    d.onclick = function () {
+                        s(idx, u, t);
+                    }
+                })(i, D[i].u, D[i].t);
+                w.appendChild(d);
+            }
+
+            // Init Swiper
+            /* ============================================
+               CUSTOMIZABLE: 캐러셀 설정
+               ============================================
+               AI 요청 예시:
+               - "자동재생 속도를 더 빠르게/느리게 해줘"
+               - "자동재생을 끄고 수동으로만 넘기게 해줘"
+               - "무한 루프를 꺼줘"
+            */
+            new Swiper(".s", {
+                loop: true,  // 무한 루프: true = 켜기, false = 끄기
+                autoplay: {
+                    delay: 3000  // 자동재생 딜레이 (밀리초): 3000 = 3초
+                    // 자동재생 끄기: 이 줄 전체를 삭제하거나 주석처리
+                },
+                // 추가 가능한 옵션들:
+                // speed: 300,  // 슬라이드 전환 속도 (밀리초)
+                // slidesPerView: 1,  // 한 번에 보이는 슬라이드 수
+                // spaceBetween: 0,  // 슬라이드 간 간격 (픽셀)
+                on: {
+                    slideChange: function () {
+                        document.getElementById("p").textContent = (this.realIndex + 1) + "/" + D.length
+                    }
+                }
+            });
+            document.getElementById("p").textContent = "1/" + D.length;
+
+            /* ============================================
+               CUSTOMIZABLE: 모달 표시 딜레이
+               ============================================
+               AI 요청 예시: "모달을 더 빨리/천천히 나타나게 해줘"
+               500 = 0.5초 딜레이
+               1000 = 1초 딜레이
+               0 = 즉시 표시
+            */
+            setTimeout(function () {
+                document.getElementById("o").classList.add("visible");
+            }, 500);
+        })();
+    </script>
+</body>
+</html>

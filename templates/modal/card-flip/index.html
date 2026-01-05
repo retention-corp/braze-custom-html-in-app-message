@@ -1,0 +1,386 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { width: 100%; height: 100%; font-family: -apple-system, system-ui, sans-serif; background: transparent; }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .overlay.visible { opacity: 1; }
+
+        .modal {
+            position: relative;
+            max-width: 500px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            transform: scale(0.9);
+            transition: transform 0.3s;
+        }
+        .overlay.visible .modal { transform: scale(1); }
+
+        .card-container {
+            position: relative;
+            width: 100%;
+            perspective: 1000px;
+        }
+
+        .card {
+            width: 100%;
+            backface-visibility: hidden;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .card-front {
+            transform: rotateY(0deg);
+        }
+        .card-container.flipped .card-front {
+            transform: rotateY(180deg);
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+        }
+        .card-container.flipped .card-back {
+            transform: rotateY(0deg);
+            position: relative;
+        }
+
+        .card-front {
+            cursor: pointer;
+        }
+
+        .card-front img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .card-back {
+            padding: 30px 25px;
+            text-align: center;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .card-back img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .card-back h2 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #000;
+            margin: 0 0 16px 0;
+        }
+
+        .card-back p {
+            font-size: 15px;
+            color: #333;
+            line-height: 1.5;
+            margin: 0 0 24px 0;
+        }
+
+        .card-back .btn {
+            display: inline-block;
+            padding: 12px 28px;
+            font-size: 15px;
+            font-weight: 600;
+            background: #000;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s ease;
+            text-decoration: none;
+        }
+        .card-back .btn:hover {
+            opacity: 0.85;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        .close-button svg { width: 16px; height: 16px; }
+
+        .back-button {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            width: 32px;
+            height: 32px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .back-button.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .back-button svg { width: 16px; height: 16px; }
+
+        .debug-tag {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: black;
+            color: white;
+            padding: 4px 8px;
+            font-size: 10px;
+            z-index: 9999;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        @media (max-width: 600px) {
+            .modal { max-width: 90%; }
+            .card-back { padding: 25px 20px; min-height: 220px; }
+            .card-back h2 { font-size: 20px; margin-bottom: 14px; }
+            .card-back p { font-size: 14px; margin-bottom: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay" onclick="closeOverlay()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="debug-tag">V1_CARD_FLIP</div>
+
+            <button class="close-button" id="close-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5">
+                    <path d="M6 6L18 18M18 6L6 18"/>
+                </svg>
+            </button>
+
+            <button class="back-button" id="back-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+            </button>
+
+            <div class="card-container" id="card-container">
+                <!-- Front Card -->
+                <div class="card card-front" id="front-card">
+                    <img src="https://picsum.photos/seed/Card-Front/500/400" alt="Card Front">
+                </div>
+
+                <!-- Back Card -->
+                <div class="card card-back" id="back-card">
+                    <!-- Content will be injected by JavaScript based on backType -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ============================================
+           CUSTOMIZABLE: Front Card Image
+           ============================================
+           AI 요청 예시: "프론트 카드 이미지를 [URL]로 바꿔줘"
+        */
+        var frontImage = "https://picsum.photos/seed/Card-Front/500/400";
+
+        /* ============================================
+           CUSTOMIZABLE: Back Card Type
+           ============================================
+           AI 요청 예시:
+           - "백 카드를 이미지 타입으로 바꿔줘"
+           - "백 카드를 텍스트 타입으로 바꿔줘"
+
+           Options:
+           - "image": 이미지만 표시
+           - "text": 제목 + 설명 + 버튼 표시
+        */
+        var backType = "text"; // "image" or "text"
+
+        /* ============================================
+           CUSTOMIZABLE: Back Card - Image Type
+           ============================================
+           backType이 "image"일 때만 사용됨
+           AI 요청 예시: "백 카드 이미지를 [URL]로 바꿔줘"
+        */
+        var backImage = "https://picsum.photos/seed/Card-Back/500/400";
+
+        /* ============================================
+           CUSTOMIZABLE: Back Card - Text Type
+           ============================================
+           backType이 "text"일 때만 사용됨
+           AI 요청 예시:
+           - "백 카드 제목을 '특별 프로모션'으로 바꿔줘"
+           - "백 카드 설명을 업데이트해줘"
+           - "버튼 텍스트를 '자세히 보기'로 바꿔줘"
+           - "버튼 링크를 https://example.com으로 바꿔줘"
+        */
+        var backContent = {
+            title: "Special Offer",
+            description: "Discover our exclusive promotion. Limited time offer with amazing benefits for our valued customers.",
+            buttonText: "Learn More",
+            buttonUrl: "https://www.example.com",
+            linkType: "web" // "deeplink" or "web"
+        };
+
+        // Bridge ready flag
+        var bridgeReady = false;
+
+        // Braze Bridge Ready Event
+        window.addEventListener("ab.BridgeReady", function() {
+            bridgeReady = true;
+        }, false);
+
+        // Log click with bridge
+        function logClick(buttonId) {
+            if (bridgeReady && window.brazeBridge) {
+                brazeBridge.logClick(buttonId);
+            } else if (window.appboyBridge) {
+                appboyBridge.logClick(buttonId);
+            }
+        }
+
+        // Close message
+        function closeMessage() {
+            if (bridgeReady && window.brazeBridge) {
+                brazeBridge.requestImmediateDataFlush();
+                brazeBridge.closeMessage();
+            } else if (window.appboyBridge) {
+                appboyBridge.requestImmediateDataFlush();
+                appboyBridge.closeMessage();
+            } else {
+                document.getElementById("overlay").classList.remove("visible");
+            }
+        }
+
+        // Close overlay
+        function closeOverlay() {
+            logClick("close_overlay");
+            closeMessage();
+        }
+
+        // Show back card (flip to back)
+        function showBackCard() {
+            logClick("front_card_click");
+            document.getElementById("card-container").classList.add("flipped");
+            document.getElementById("back-btn").classList.add("visible");
+        }
+
+        // Show front card (flip to front)
+        function showFrontCard() {
+            logClick("back_button");
+            document.getElementById("card-container").classList.remove("flipped");
+            document.getElementById("back-btn").classList.remove("visible");
+        }
+
+        // Handle back card button click
+        function handleBackCardButton() {
+            logClick("back_card_button");
+            var url = backContent.buttonUrl;
+            var type = backContent.linkType;
+
+            if (url) {
+                if (!type) {
+                    type = (url.indexOf('http') === 0) ? 'web' : 'deeplink';
+                }
+
+                if (type === 'web') {
+                    window.open(url, '_blank');
+                } else {
+                    window.location.href = url;
+                }
+            }
+        }
+
+        // Initialize
+        (function () {
+            // Set front card image
+            document.querySelector("#front-card img").src = frontImage;
+
+            // Build back card based on type
+            var backCardEl = document.getElementById("back-card");
+            if (backType === "image") {
+                backCardEl.innerHTML = '<img src="' + backImage + '" alt="Card Back">';
+            } else {
+                backCardEl.innerHTML =
+                    '<h2>' + backContent.title + '</h2>' +
+                    '<p>' + backContent.description + '</p>' +
+                    '<button class="btn" id="back-card-btn">' + backContent.buttonText + '</button>';
+
+                // Attach button click handler
+                setTimeout(function() {
+                    var btn = document.getElementById("back-card-btn");
+                    if (btn) {
+                        btn.addEventListener("click", handleBackCardButton);
+                    }
+                }, 100);
+            }
+
+            // Front card click
+            document.getElementById("front-card").addEventListener("click", showBackCard);
+
+            // Back button click
+            document.getElementById("back-btn").addEventListener("click", function(e) {
+                e.stopPropagation();
+                showFrontCard();
+            });
+
+            // Close button
+            document.getElementById("close-btn").addEventListener("click", function(e) {
+                e.stopPropagation();
+                logClick("close_button");
+                closeMessage();
+            });
+
+            // Show modal
+            setTimeout(function () {
+                document.getElementById("overlay").classList.add("visible");
+            }, 300);
+        })();
+    </script>
+</body>
+</html>

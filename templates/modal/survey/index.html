@@ -1,0 +1,409 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { width: 100%; height: 100%; font-family: -apple-system, system-ui, sans-serif; background: transparent; }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .overlay.visible { opacity: 1; }
+
+        .modal {
+            position: relative;
+            max-width: 500px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 40px 30px;
+            box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .overlay.visible .modal { transform: scale(1); }
+
+        .modal h2 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #000;
+            margin: 0 0 12px 0;
+        }
+
+        .modal p {
+            font-size: 15px;
+            color: #555;
+            margin: 0 0 25px 0;
+            line-height: 1.5;
+        }
+
+        .survey-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .survey-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .survey-option input[type="checkbox"],
+        .survey-option input[type="radio"] {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .survey-option label {
+            font-size: 15px;
+            color: #333;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 14px 28px;
+            font-size: 15px;
+            font-weight: 600;
+            background: #000;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+        .submit-button:hover {
+            opacity: 0.85;
+        }
+
+        .thank-you {
+            text-align: center;
+            padding: 20px 0;
+        }
+        .thank-you h2 {
+            font-size: 22px;
+            color: #000;
+            margin-bottom: 12px;
+        }
+        .thank-you p {
+            font-size: 15px;
+            color: #555;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 32px;
+            height: 32px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: 0.2s;
+        }
+        .close-button:hover {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        .close-button svg { width: 16px; height: 16px; }
+
+        .debug-tag {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: black;
+            color: white;
+            padding: 4px 8px;
+            font-size: 10px;
+            z-index: 9999;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        @media (max-width: 600px) {
+            .modal {
+                padding: 30px 20px;
+                width: 95%;
+            }
+            .modal h2 { font-size: 20px; }
+            .modal p { font-size: 14px; }
+            .survey-option label { font-size: 14px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay" onclick="closeOverlay()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="debug-tag">V1_SURVEY</div>
+
+            <button class="close-button" id="close-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5">
+                    <path d="M6 6L18 18M18 6L6 18"/>
+                </svg>
+            </button>
+
+            <div id="survey-content">
+                <h2 id="survey-title">Survey Title</h2>
+                <p id="survey-description">Survey description goes here</p>
+
+                <form id="survey-form">
+                    <div class="survey-options" id="survey-options">
+                        <!-- Options will be injected by JavaScript -->
+                    </div>
+
+                    <button type="button" class="submit-button" id="submit-btn">
+                        Submit
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ============================================
+           CUSTOMIZABLE: Survey Configuration
+           ============================================
+           AI 요청 예시:
+           - "설문 제목을 '고객 만족도 조사'로 바꿔줘"
+           - "설문 설명을 업데이트해줘"
+           - "옵션을 5개로 늘려줘"
+           - "버튼 텍스트를 '제출하기'로 바꿔줘"
+        */
+        var surveyTitle = "We'd Love Your Feedback!";
+        var surveyDescription = "Please take a moment to answer this quick question.";
+
+        /* ============================================
+           CUSTOMIZABLE: Survey Options
+           ============================================
+           AI 요청 예시:
+           - "옵션 텍스트를 변경해줘"
+           - "옵션을 4개로 줄여줘"
+           - "새로운 옵션을 추가해줘"
+        */
+        var surveyOptions = [
+            "Very Satisfied",
+            "Satisfied",
+            "Neutral",
+            "Dissatisfied",
+            "Very Dissatisfied"
+        ];
+
+        /* ============================================
+           CUSTOMIZABLE: Survey Settings
+           ============================================
+           AI 요청 예시:
+           - "다중 선택이 가능하게 바꿔줘"
+           - "옵션 순서를 랜덤으로 섞지 않게 해줘"
+           - "커스텀 이벤트 이름을 바꿔줘"
+        */
+        var multipleChoice = false; // true = 다중 선택 (checkbox), false = 단일 선택 (radio)
+        var randomizeOptions = false; // true = 옵션 순서를 랜덤으로 섞음
+        var buttonText = "Submit";
+        var customEventName = "survey_submitted"; // 제출 시 로그할 커스텀 이벤트 이름
+        var customAttributeKey = "last_survey_response"; // 응답을 저장할 커스텀 속성 키 (optional)
+
+        /* ============================================
+           CUSTOMIZABLE: Thank You Message
+           ============================================
+           AI 요청 예시: "감사 메시지를 변경해줘"
+        */
+        var thankYouTitle = "Thank You!";
+        var thankYouMessage = "Your response has been recorded.";
+
+        // Global variables
+        var bridgeReady = false;
+
+        // Braze Bridge Ready Event
+        window.addEventListener("ab.BridgeReady", function() {
+            bridgeReady = true;
+        }, false);
+
+        // Log click with bridge
+        function logClick(buttonId) {
+            if (bridgeReady && window.brazeBridge) {
+                brazeBridge.logClick(buttonId);
+            } else if (window.appboyBridge) {
+                appboyBridge.logClick(buttonId);
+            }
+        }
+
+        // Log custom event
+        function logCustomEvent(eventName, properties) {
+            if (bridgeReady && window.brazeBridge) {
+                if (properties) {
+                    brazeBridge.logCustomEvent(eventName, properties);
+                } else {
+                    brazeBridge.logCustomEvent(eventName);
+                }
+            } else if (window.appboyBridge) {
+                if (properties) {
+                    appboyBridge.logCustomEvent(eventName, properties);
+                } else {
+                    appboyBridge.logCustomEvent(eventName);
+                }
+            }
+        }
+
+        // Set custom user attribute
+        function setCustomAttribute(key, value) {
+            if (bridgeReady && window.brazeBridge) {
+                brazeBridge.getUser().setCustomUserAttribute(key, value);
+            } else if (window.appboyBridge) {
+                appboyBridge.getUser().setCustomUserAttribute(key, value);
+            }
+        }
+
+        // Close message
+        function closeMessage() {
+            if (bridgeReady && window.brazeBridge) {
+                brazeBridge.requestImmediateDataFlush();
+                brazeBridge.closeMessage();
+            } else if (window.appboyBridge) {
+                appboyBridge.requestImmediateDataFlush();
+                appboyBridge.closeMessage();
+            } else {
+                document.getElementById("overlay").classList.remove("visible");
+            }
+        }
+
+        // Close overlay
+        function closeOverlay() {
+            logClick("close_overlay");
+            closeMessage();
+        }
+
+        // Handle survey submission
+        function handleSurveySubmit() {
+            logClick("survey_submit");
+
+            var form = document.getElementById("survey-form");
+            var selectedValues = [];
+
+            if (multipleChoice) {
+                // Handle multiple checkbox selections
+                var selectedCheckboxes = form.querySelectorAll('input[type="checkbox"]:checked');
+                selectedValues = Array.from(selectedCheckboxes).map(function(checkbox) {
+                    return checkbox.value;
+                });
+            } else {
+                // Handle single radio selection
+                var selectedRadio = form.querySelector('input[type="radio"]:checked');
+                if (selectedRadio) {
+                    selectedValues = [selectedRadio.value];
+                }
+            }
+
+            // Validate selection
+            if (selectedValues.length === 0) {
+                alert("Please select at least one option");
+                return;
+            }
+
+            // Log custom event with response
+            var eventProperties = {
+                response: multipleChoice ? selectedValues.join(", ") : selectedValues[0]
+            };
+            logCustomEvent(customEventName, eventProperties);
+
+            // Set custom attribute (optional)
+            if (customAttributeKey) {
+                var attributeValue = multipleChoice ? selectedValues.join(", ") : selectedValues[0];
+                setCustomAttribute(customAttributeKey, attributeValue);
+            }
+
+            // Show thank you message
+            document.getElementById("survey-content").innerHTML =
+                '<div class="thank-you">' +
+                '<h2>' + thankYouTitle + '</h2>' +
+                '<p>' + thankYouMessage + '</p>' +
+                '</div>';
+        }
+
+        // Initialize survey
+        (function () {
+            // Set title and description
+            document.getElementById("survey-title").textContent = surveyTitle;
+            document.getElementById("survey-description").textContent = surveyDescription;
+
+            // Set button text
+            document.getElementById("submit-btn").textContent = buttonText;
+
+            // Randomize options if enabled
+            var options = surveyOptions.slice(); // Copy array
+            if (randomizeOptions) {
+                for (var i = options.length - 1; i > 0; i--) {
+                    var j = Math.floor(Math.random() * (i + 1));
+                    var temp = options[i];
+                    options[i] = options[j];
+                    options[j] = temp;
+                }
+            }
+
+            // Build survey options
+            var optionsContainer = document.getElementById("survey-options");
+            var inputType = multipleChoice ? "checkbox" : "radio";
+
+            for (var i = 0; i < options.length; i++) {
+                var optionDiv = document.createElement("div");
+                optionDiv.className = "survey-option";
+
+                var input = document.createElement("input");
+                input.type = inputType;
+                input.name = "survey-choice";
+                input.value = options[i];
+                input.id = "option-" + i;
+
+                var label = document.createElement("label");
+                label.textContent = options[i];
+                label.htmlFor = "option-" + i;
+
+                optionDiv.appendChild(input);
+                optionDiv.appendChild(label);
+                optionsContainer.appendChild(optionDiv);
+            }
+
+            // Submit button click
+            document.getElementById("submit-btn").addEventListener("click", handleSurveySubmit);
+
+            // Close button
+            document.getElementById("close-btn").addEventListener("click", function(e) {
+                e.stopPropagation();
+                logClick("close_button");
+                closeMessage();
+            });
+
+            // Show modal
+            setTimeout(function () {
+                document.getElementById("overlay").classList.add("visible");
+            }, 300);
+        })();
+    </script>
+</body>
+</html>

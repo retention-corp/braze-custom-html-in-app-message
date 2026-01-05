@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0 }
+        html, body { width: 100%; height: 100%; font-family: -apple-system, system-ui, sans-serif; background: transparent; overflow: hidden; }
+        .fullscreen-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; opacity: 0; transition: opacity 0.3s; }
+        .fullscreen-container.visible { opacity: 1 }
+        .swiper { width: 100%; height: 100%; }
+        .swiper-slide { position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
+        .swiper-slide img { width: 100%; height: 100%; object-fit: contain; display: block; }
+        .close-button { position: absolute; top: 16px; right: 16px; width: 40px; height: 40px; background: rgba(0,0,0,0.6); border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; }
+        .close-button svg { width: 20px; height: 20px; }
+        .page-indicator { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); color: white; padding: 6px 12px; border-radius: 16px; font-size: 12px; z-index: 10; }
+        .debug-tag { position: absolute; top: 10px; left: 10px; background: black; color: white; padding: 4px 8px; font-size: 10px; z-index: 9999; border-radius: 4px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <div class="fullscreen-container" id="container">
+        <div class="debug-tag">V1_FULLSCREEN_CAROUSEL</div>
+        <button class="close-button" id="close-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                <path d="M6 6L18 18M18 6L6 18"/>
+            </svg>
+        </button>
+        <div class="swiper s">
+            <div class="swiper-wrapper" id="w"></div>
+        </div>
+        <div class="page-indicator" id="p">1/4</div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+        var D = [
+            { "i": "https://storage.googleapis.com/meta-main-catalog-creatives-20251209/roi-ideaA/v3b_compact_darkband_bigfont_4448550_v4.jpg", "u": "athlerab://product/4448550", "t": "deeplink" },
+            { "i": "https://storage.googleapis.com/meta-main-catalog-creatives-20251209/roi-ideaA/v3b_compact_darkband_bigfont_4629004_v4.jpg", "u": "athlerab://product/4629004", "t": "deeplink" },
+            { "i": "https://storage.googleapis.com/meta-main-catalog-creatives-20251209/roi-ideaA/v3b_compact_darkband_bigfont_4658882_v4.jpg", "u": "https://www.example.com/promotion", "t": "web" },
+            { "i": "https://storage.googleapis.com/meta-main-catalog-creatives-20251209/roi-ideaA/v3b_compact_darkband_bigfont_4460361_v4.jpg", "u": "athlerab://product/4460361", "t": "deeplink" }
+        ];
+        var bridgeReady = false;
+        window.addEventListener("ab.BridgeReady", function() { bridgeReady = true; }, false);
+        function c() {
+            if (bridgeReady && window.brazeBridge) { brazeBridge.logClick("close_button"); brazeBridge.closeMessage(); }
+            else if (window.appboyBridge) { appboyBridge.logClick("close_button"); appboyBridge.closeMessage(); }
+            else { document.getElementById("container").classList.remove("visible"); }
+        }
+        function s(idx, url, type) {
+            var btnId = "slide_" + (idx + 1);
+            if (bridgeReady && window.brazeBridge) { brazeBridge.logClick(btnId); }
+            else if (window.appboyBridge) { appboyBridge.logClick(btnId); }
+            if (url) {
+                if (!type) { type = (url.indexOf('http') === 0) ? 'web' : 'deeplink'; }
+                if (type === 'web') { window.open(url, '_blank'); }
+                else { window.location.href = url; }
+            }
+        }
+        (function () {
+            var w = document.getElementById("w");
+            for (var i = 0; i < D.length; i++) {
+                var d = document.createElement("div");
+                d.className = "swiper-slide";
+                d.innerHTML = '<img src="' + D[i].i + '">';
+                (function (idx, u, t) { d.onclick = function () { s(idx, u, t); } })(i, D[i].u, D[i].t);
+                w.appendChild(d);
+            }
+            new Swiper(".s", {
+                loop: true,
+                autoplay: { delay: 3000 },
+                on: { slideChange: function () { document.getElementById("p").textContent = (this.realIndex + 1) + "/" + D.length } }
+            });
+            document.getElementById("p").textContent = "1/" + D.length;
+            document.getElementById("close-btn").addEventListener("click", c);
+            setTimeout(function () { document.getElementById("container").classList.add("visible"); }, 300);
+        })();
+    </script>
+</body>
+</html>

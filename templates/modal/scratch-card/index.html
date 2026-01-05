@@ -1,0 +1,589 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { width: 100%; height: 100%; font-family: -apple-system, system-ui, sans-serif; background: transparent; }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(51, 51, 51, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .overlay.visible { opacity: 1; }
+
+        .modal {
+            position: relative;
+            max-width: 450px;
+            width: 90%;
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 40px 30px;
+            box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s;
+        }
+        .overlay.visible .modal { transform: scale(1); }
+
+        .modal h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #000;
+            margin: 0 0 15px 0;
+        }
+
+        .modal p {
+            font-size: 15px;
+            color: #333;
+            margin: 0 0 25px 0;
+            line-height: 1.5;
+        }
+
+        .scratch-container {
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+            height: 200px;
+            margin: 0 auto 25px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .scratch-container img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        .scratch-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+            touch-action: none;
+            z-index: 2;
+            background: transparent;
+        }
+        .scratch-canvas:active {
+            cursor: grabbing;
+        }
+
+        /* Debug: Uncomment to see canvas boundaries
+        .scratch-canvas {
+            border: 2px solid red !important;
+        }
+        */
+
+        .scratch-instruction {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            text-shadow: 0 0 4px rgba(255,255,255,0.8);
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        .claim-button {
+            padding: 14px 28px;
+            font-size: 15px;
+            font-weight: 600;
+            background: #000;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s ease;
+            width: 100%;
+            max-width: 280px;
+        }
+        .claim-button:hover {
+            opacity: 0.85;
+        }
+        .claim-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 32px;
+            height: 32px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: 0.2s;
+        }
+        .close-button:hover {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        .close-button svg { width: 16px; height: 16px; }
+
+        .debug-tag {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: black;
+            color: white;
+            padding: 4px 8px;
+            font-size: 10px;
+            z-index: 9999;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        @media (max-width: 600px) {
+            .modal {
+                padding: 30px 20px;
+                width: 95%;
+            }
+            .modal h2 { font-size: 18px; }
+            .modal p { font-size: 14px; }
+            .scratch-container {
+                max-width: 280px;
+                height: 180px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay" onclick="closeOverlay()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="debug-tag">V1_SCRATCH_CARD</div>
+
+            <button class="close-button" id="close-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5">
+                    <path d="M6 6L18 18M18 6L6 18"/>
+                </svg>
+            </button>
+
+            <h2>Scratch Here to Reveal Your Prize!</h2>
+            <p>You have one chance to win big!</p>
+
+            <div class="scratch-container" id="scratch-container">
+                <img id="prize-image" alt="Prize">
+                <canvas id="scratch-canvas" class="scratch-canvas"></canvas>
+                <div class="scratch-instruction">SCRATCH HERE!</div>
+            </div>
+
+            <button class="claim-button" id="claim-btn" disabled>
+                CLAIM YOUR PRIZE
+            </button>
+        </div>
+    </div>
+
+    <script>
+        /* ============================================
+           CUSTOMIZABLE: Prize Configuration
+           ============================================
+           각 프라이즈는 이미지, 이벤트명, 속성, 확률을 가짐
+           AI 요청 예시:
+           - "프라이즈 3개로 줄여줘"
+           - "첫 번째 프라이즈 확률을 10%로 바꿔줘"
+           - "커스텀 이벤트 이름을 바꿔줘"
+        */
+        var prizes = [
+            {
+                image: "https://picsum.photos/seed/Prize1/300/200",
+                eventName: "scratch_win_grand_prize",
+                attributeKey: "last_scratch_result",
+                attributeValue: "grand_prize",
+                claimUrl: "https://www.example.com/grand-prize",
+                probability: 0.05 // 5%
+            },
+            {
+                image: "https://picsum.photos/seed/Prize2/300/200",
+                eventName: "scratch_win_second_prize",
+                attributeKey: "last_scratch_result",
+                attributeValue: "second_prize",
+                claimUrl: "https://www.example.com/second-prize",
+                probability: 0.15 // 15%
+            },
+            {
+                image: "https://picsum.photos/seed/Prize3/300/200",
+                eventName: "scratch_win_third_prize",
+                attributeKey: "last_scratch_result",
+                attributeValue: "third_prize",
+                claimUrl: "https://www.example.com/third-prize",
+                probability: 0.30 // 30%
+            },
+            {
+                image: "https://picsum.photos/seed/Prize4/300/200",
+                eventName: "scratch_no_prize",
+                attributeKey: "last_scratch_result",
+                attributeValue: "no_prize",
+                claimUrl: "https://www.example.com/try-again",
+                probability: 0.50 // 50%
+            }
+        ];
+
+        /* ============================================
+           CUSTOMIZABLE: Scratch Settings
+           ============================================
+           AI 요청 예시: "스크래치 두께를 더 크게 만들어줘"
+        */
+        var scratchBrushSize = 30; // 스크래치 브러시 크기
+        var scratchThreshold = 50; // 스크래치 완료 임계값 (%)
+        var linkType = "web"; // "deeplink" or "web"
+
+        // Global variables
+        var canvas, ctx, isScratching = false, isRevealed = false;
+        var selectedPrize = null;
+        var bridgeReady = false;
+
+        // Braze Bridge Ready Event
+        window.addEventListener("ab.BridgeReady", function() {
+            bridgeReady = true;
+        }, false);
+
+        // Log click with bridge
+        function logClick(buttonId) {
+            if (bridgeReady && window.brazeBridge) {
+                brazeBridge.logClick(buttonId);
+            } else if (window.appboyBridge) {
+                appboyBridge.logClick(buttonId);
+            }
+        }
+
+        // Log custom event
+        function logCustomEvent(eventName, properties) {
+            if (bridgeReady && window.brazeBridge) {
+                if (properties) {
+                    brazeBridge.logCustomEvent(eventName, properties);
+                } else {
+                    brazeBridge.logCustomEvent(eventName);
+                }
+            } else if (window.appboyBridge) {
+                if (properties) {
+                    appboyBridge.logCustomEvent(eventName, properties);
+                } else {
+                    appboyBridge.logCustomEvent(eventName);
+                }
+            }
+        }
+
+        // Set custom user attribute
+        function setCustomAttribute(key, value) {
+            if (bridgeReady && window.brazeBridge) {
+                brazeBridge.getUser().setCustomUserAttribute(key, value);
+            } else if (window.appboyBridge) {
+                appboyBridge.getUser().setCustomUserAttribute(key, value);
+            }
+        }
+
+        // Close message
+        function closeMessage() {
+            if (bridgeReady && window.brazeBridge) {
+                brazeBridge.requestImmediateDataFlush();
+                brazeBridge.closeMessage();
+            } else if (window.appboyBridge) {
+                appboyBridge.requestImmediateDataFlush();
+                appboyBridge.closeMessage();
+            } else {
+                document.getElementById("overlay").classList.remove("visible");
+            }
+        }
+
+        // Close overlay
+        function closeOverlay() {
+            logClick("close_overlay");
+            closeMessage();
+        }
+
+        // Select random prize based on probability
+        function selectRandomPrize() {
+            var random = Math.random();
+            var cumulative = 0;
+
+            for (var i = 0; i < prizes.length; i++) {
+                cumulative += prizes[i].probability;
+                if (random <= cumulative) {
+                    return prizes[i];
+                }
+            }
+
+            return prizes[prizes.length - 1];
+        }
+
+        // Initialize scratch canvas
+        function initScratchCanvas() {
+            canvas = document.getElementById('scratch-canvas');
+            if (!canvas) {
+                console.log('Canvas element not found');
+                return false;
+            }
+
+            ctx = canvas.getContext('2d');
+            if (!ctx) {
+                console.log('Canvas context not available');
+                return false;
+            }
+
+            var container = document.getElementById('scratch-container');
+            var containerWidth = container.offsetWidth;
+            var containerHeight = container.offsetHeight;
+
+            // Check if container has size (must be visible)
+            if (containerWidth === 0 || containerHeight === 0) {
+                console.log('Container has no size yet:', containerWidth, containerHeight);
+                return false;
+            }
+
+            console.log('Initializing canvas with size:', containerWidth, 'x', containerHeight);
+
+            // Set canvas dimensions directly (simpler approach)
+            canvas.width = containerWidth;
+            canvas.height = containerHeight;
+
+            // Fill with scratch layer (silver/gray color - opaque)
+            ctx.fillStyle = '#B0B0B0';
+            ctx.fillRect(0, 0, containerWidth, containerHeight);
+
+            // Add lighter texture for realistic scratch effect
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            for (var i = 0; i < 50; i++) {
+                ctx.fillRect(
+                    Math.random() * containerWidth,
+                    Math.random() * containerHeight,
+                    3, 3
+                );
+            }
+
+            // Add darker texture for depth
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            for (var i = 0; i < 30; i++) {
+                ctx.fillRect(
+                    Math.random() * containerWidth,
+                    Math.random() * containerHeight,
+                    2, 2
+                );
+            }
+
+            console.log('Canvas initialized successfully with size:', canvas.width, 'x', canvas.height);
+
+            // Mouse events
+            canvas.addEventListener('mousedown', startScratch);
+            canvas.addEventListener('mousemove', scratch);
+            canvas.addEventListener('mouseup', stopScratch);
+            canvas.addEventListener('mouseleave', stopScratch);
+
+            // Touch events
+            canvas.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                startScratch(e);
+            }, { passive: false });
+            canvas.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+                scratch(e);
+            }, { passive: false });
+            canvas.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                stopScratch(e);
+            }, { passive: false });
+
+            return true;
+        }
+
+        // Start scratching
+        function startScratch(e) {
+            isScratching = true;
+            logClick("scratch_start");
+        }
+
+        // Scratch effect
+        function scratch(e) {
+            if (!isScratching || isRevealed || !canvas || !ctx) return;
+
+            var rect = canvas.getBoundingClientRect();
+            var x, y;
+
+            if (e.touches && e.touches[0]) {
+                x = e.touches[0].clientX - rect.left;
+                y = e.touches[0].clientY - rect.top;
+            } else {
+                x = e.clientX - rect.left;
+                y = e.clientY - rect.top;
+            }
+
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.fillStyle = 'rgba(0, 0, 0, 1)'; // Required for destination-out to work
+            ctx.beginPath();
+            ctx.arc(x, y, scratchBrushSize, 0, Math.PI * 2);
+            ctx.fill();
+
+            checkScratchCompletion();
+        }
+
+        // Stop scratching
+        function stopScratch() {
+            isScratching = false;
+        }
+
+        // Check if scratch is complete
+        function checkScratchCompletion() {
+            if (isRevealed) return;
+
+            var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            var pixels = imageData.data;
+            var transparent = 0;
+
+            for (var i = 3; i < pixels.length; i += 4) {
+                if (pixels[i] === 0) transparent++;
+            }
+
+            var percentage = (transparent / (pixels.length / 4)) * 100;
+
+            if (percentage >= scratchThreshold) {
+                revealPrize();
+            }
+        }
+
+        // Reveal prize completely
+        function revealPrize() {
+            if (isRevealed) return;
+            isRevealed = true;
+
+            // Clear canvas
+            canvas.style.display = 'none';
+            document.querySelector('.scratch-instruction').style.display = 'none';
+
+            // Log custom event
+            logCustomEvent(selectedPrize.eventName);
+
+            // Set custom attribute
+            setCustomAttribute(selectedPrize.attributeKey, selectedPrize.attributeValue);
+
+            // Enable claim button
+            document.getElementById("claim-btn").disabled = false;
+
+            logClick("scratch_complete");
+        }
+
+        // Handle claim button
+        function handleClaimButton() {
+            console.log('Claim button clicked');
+            logClick("claim_prize");
+
+            if (!selectedPrize) {
+                console.error('No prize selected');
+                alert('Error: No prize selected');
+                return;
+            }
+
+            var url = selectedPrize.claimUrl;
+            console.log('Prize URL:', url);
+
+            if (!url) {
+                console.error('No claim URL defined');
+                alert('Error: No URL configured');
+                return;
+            }
+
+            var type = linkType;
+
+            // Auto-detect link type if not specified
+            if (!type || type === "") {
+                type = (url.indexOf('http') === 0) ? 'web' : 'deeplink';
+            }
+
+            console.log('Opening URL:', url, 'as type:', type);
+
+            try {
+                if (type === 'web') {
+                    window.open(url, '_blank');
+                } else {
+                    window.location.href = url;
+                }
+            } catch (error) {
+                console.error('Error opening URL:', error);
+                alert('Error opening link: ' + error.message);
+            }
+        }
+
+        // Try to initialize canvas with retry logic
+        function tryInitCanvas(retries) {
+            console.log('Attempting canvas init, retries left:', retries);
+
+            var success = initScratchCanvas();
+
+            if (!success && retries > 0) {
+                setTimeout(function() {
+                    tryInitCanvas(retries - 1);
+                }, 200);
+            }
+        }
+
+        // Initialize
+        (function () {
+            // Select random prize
+            selectedPrize = selectRandomPrize();
+
+            // Set prize image
+            var prizeImg = document.getElementById("prize-image");
+            prizeImg.src = selectedPrize.image;
+
+            // Claim button click
+            var claimBtn = document.getElementById("claim-btn");
+            if (claimBtn) {
+                claimBtn.addEventListener("click", function(e) {
+                    console.log('Button clicked, disabled:', claimBtn.disabled);
+                    if (!claimBtn.disabled) {
+                        handleClaimButton();
+                    } else {
+                        console.log('Button is disabled, please scratch first');
+                    }
+                });
+                console.log('Claim button event listener attached');
+            } else {
+                console.error('Claim button not found');
+            }
+
+            // Close button
+            document.getElementById("close-btn").addEventListener("click", function(e) {
+                e.stopPropagation();
+                logClick("close_button");
+                closeMessage();
+            });
+
+            // Show modal first
+            setTimeout(function () {
+                document.getElementById("overlay").classList.add("visible");
+
+                // Initialize canvas AFTER modal is visible (when container has size)
+                setTimeout(function() {
+                    tryInitCanvas(5); // Try up to 5 times with 200ms intervals
+                }, 400); // Wait for modal animation to complete
+            }, 300);
+        })();
+    </script>
+</body>
+</html>

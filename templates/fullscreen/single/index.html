@@ -1,0 +1,214 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, system-ui, sans-serif;
+            background: transparent;
+            overflow: hidden;
+        }
+        .fullscreen-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* ============================================
+               CUSTOMIZABLE: 배경색
+               ============================================
+               AI 요청 예시: "배경을 검정색으로 바꿔줘"
+               #ffffff = 흰색 (기본값)
+               #000000 = 검정색
+               #F5F5F5 = 연한 회색
+            */
+            background: #ffffff;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .fullscreen-container.visible {
+            opacity: 1
+        }
+        .image-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            cursor: pointer;
+        }
+        .image-wrapper img {
+            width: 100%;
+            height: 100%;
+            /* ============================================
+               CUSTOMIZABLE: 이미지 핏 스타일
+               ============================================
+               AI 요청 예시: "이미지를 꽉 채우게 해줘"
+               contain = 전체 이미지 표시 (여백 가능)
+               cover = 화면 꽉 채움 (일부 잘림 가능)
+            */
+            object-fit: contain;
+            display: block;
+        }
+        .close-button {
+            position: absolute;
+            /* ============================================
+               CUSTOMIZABLE: 닫기 버튼 위치
+               ============================================
+               AI 요청 예시: "닫기 버튼을 왼쪽으로 옮겨줘"
+               top: 16px, right: 16px = 오른쪽 상단 (기본값)
+               top: 16px, left: 16px = 왼쪽 상단
+            */
+            top: 16px;
+            right: 16px;
+            width: 40px;
+            height: 40px;
+            /* ============================================
+               CUSTOMIZABLE: 닫기 버튼 배경
+               ============================================
+               AI 요청 예시: "닫기 버튼 배경을 불투명하게 만들어줘"
+               rgba(0,0,0,0.5) = 반투명 검정 (기본값)
+               rgba(255,255,255,0.9) = 거의 불투명 흰색
+            */
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        .close-button svg {
+            width: 20px;
+            height: 20px;
+        }
+        .debug-tag {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: black;
+            color: white;
+            padding: 4px 8px;
+            font-size: 10px;
+            z-index: 9999;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="fullscreen-container" id="container">
+        <div class="debug-tag">V1_FULLSCREEN_SINGLE</div>
+        <div class="image-wrapper" id="img-wrapper">
+            <!-- ============================================
+                 CUSTOMIZABLE: 이미지 URL
+                 ============================================
+                 AI 요청 예시: "이미지를 [URL]로 바꿔줘"
+                 권장: 전체 화면 비율 이미지 (예: 1080x1920)
+            -->
+            <img
+                src="https://storage.googleapis.com/meta-main-catalog-creatives-20251209/roi-ideaA/v3b_compact_darkband_bigfont_4448550_v4.jpg"
+                alt="promotion"
+                decoding="async"
+            />
+            <button class="close-button" id="close-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                    <path d="M6 6L18 18M18 6L6 18"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <script>
+        /* ============================================
+           CUSTOMIZABLE: 클릭 시 이동할 링크
+           ============================================
+           AI 요청 예시:
+           - "딥링크를 athlerab://product/999로 바꿔줘"
+           - "웹 링크로 바꿔줘"
+           - "클릭 시 프로모션 페이지로 이동하게 해줘"
+
+           링크 타입 설명:
+           - "deeplink": 앱 내부 딥링크 (예: athlerab://product/123)
+           - "web": 웹 브라우저로 열리는 링크 (예: https://example.com)
+           - 타입 생략 시: URL이 http로 시작하면 자동으로 web, 아니면 deeplink
+        */
+        var imageUrl = "athlerab://product/4448550";
+        var linkType = "deeplink"; // "deeplink" 또는 "web" 또는 생략
+
+        // Bridge ready flag
+        var bridgeReady = false;
+
+        // Braze Bridge Ready Event
+        window.addEventListener("ab.BridgeReady", function() {
+            bridgeReady = true;
+        }, false);
+
+        // Close message
+        function closeMessage() {
+            if (bridgeReady && window.brazeBridge) {
+                brazeBridge.logClick("close_button");
+                brazeBridge.closeMessage();
+            } else if (window.appboyBridge) {
+                appboyBridge.logClick("close_button");
+                appboyBridge.closeMessage();
+            } else {
+                document.getElementById("container").classList.remove("visible");
+            }
+        }
+
+        // Image click with tracking and link type detection
+        function handleImageClick() {
+            if (bridgeReady && window.brazeBridge) {
+                brazeBridge.logClick("image_click");
+            } else if (window.appboyBridge) {
+                appboyBridge.logClick("image_click");
+            }
+
+            if (imageUrl) {
+                // 링크 타입이 지정되지 않았으면 URL로 자동 판단
+                var type = linkType;
+                if (!type) {
+                    type = (imageUrl.indexOf('http') === 0) ? 'web' : 'deeplink';
+                }
+
+                // 웹 링크는 새 창으로, 딥링크는 현재 창으로
+                if (type === 'web') {
+                    window.open(imageUrl, '_blank');
+                } else {
+                    window.location.href = imageUrl;
+                }
+            }
+        }
+
+        // Initialize
+        (function () {
+            // Attach click handlers
+            document.getElementById("img-wrapper").addEventListener("click", handleImageClick);
+            document.getElementById("close-btn").addEventListener("click", function(e) {
+                e.stopPropagation();
+                closeMessage();
+            });
+
+            /* ============================================
+               CUSTOMIZABLE: 표시 딜레이
+               ============================================
+               AI 요청 예시: "더 빨리/천천히 나타나게 해줘"
+               300 = 0.3초 딜레이
+               500 = 0.5초 딜레이
+               0 = 즉시 표시
+            */
+            setTimeout(function () {
+                document.getElementById("container").classList.add("visible");
+            }, 300);
+        })();
+    </script>
+</body>
+</html>

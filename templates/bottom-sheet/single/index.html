@@ -1,0 +1,257 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, system-ui, sans-serif;
+            background: transparent;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* ============================================
+               CUSTOMIZABLE: 오버레이 배경색
+               ============================================
+               AI 요청 예시: "오버레이를 더 어둡게/밝게 만들어줘"
+               rgba(0,0,0,0.5) = 검정색 50% 투명
+               rgba(0,0,0,0.7) = 검정색 70% 투명 (더 어둡게)
+               rgba(0,0,0,0.3) = 검정색 30% 투명 (더 밝게)
+            */
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .overlay.visible {
+            opacity: 1
+        }
+        .modal {
+            width: 100%;
+            background: #fff;
+            /* ============================================
+               CUSTOMIZABLE: 모달 둥근 모서리
+               ============================================
+               AI 요청 예시: "모서리를 더 둥글게/덜 둥글게 만들어줘"
+               20px = 기본값
+               30px = 더 둥글게
+               10px = 덜 둥글게
+            */
+            border-radius: 20px 20px 0 0;
+            transform: translateY(100%);
+            transition: transform 0.3s;
+            overflow: hidden;
+        }
+        .overlay.visible .modal {
+            transform: translateY(0)
+        }
+        .image-container {
+            width: 100%;
+            /* ============================================
+               CUSTOMIZABLE: 이미지 높이
+               ============================================
+               AI 요청 예시: "이미지를 더 높게/낮게 만들어줘"
+               400px = 기본값
+               500px = 더 높게
+               300px = 더 낮게
+            */
+            height: 400px;
+            background: #eee;
+            border-radius: 20px 20px 0 0;
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+        }
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        /* Footer Padding - Safe Area 제거 버전 */
+        .foot {
+            display: flex;
+            justify-content: space-between;
+            padding: 16px 20px;
+            /* iOS Safe Area 패딩 - 안드로이드 GNB에 가려진다면 아래 줄의 주석을 해제하세요 */
+            /* padding-bottom: calc(20px + env(safe-area-inset-bottom, 20px)); */
+            border-top: 1px solid #eee;
+            background: #fff;
+        }
+        .btn {
+            /* ============================================
+               CUSTOMIZABLE: 버튼 스타일
+               ============================================
+               AI 요청 예시: "버튼 글씨를 더 크게/작게 만들어줘"
+               "버튼에 배경색을 넣어줘"
+            */
+            font-size: 14px;
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            /* 배경색 추가 예시: background: #007AFF; color: white; border-radius: 8px; */
+        }
+        .debug-tag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: black;
+            color: white;
+            padding: 4px 8px;
+            font-size: 10px;
+            z-index: 9999;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="o" onclick="c('close_overlay')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="debug-tag">V1_SINGLE_IMAGE</div>
+            <div class="image-container" id="img-container">
+                <!-- ============================================
+                     CUSTOMIZABLE: 이미지 URL
+                     ============================================
+                     AI 요청 예시: "이미지를 [URL]로 바꿔줘"
+                     권장 크기: 가로 비율에 맞는 이미지 (예: 1080x800)
+                -->
+                <img
+                    src="https://storage.googleapis.com/meta-main-catalog-creatives-20251209/roi-ideaA/v3b_compact_darkband_bigfont_4448550_v4.jpg"
+                    alt="promotion"
+                    decoding="async"
+                />
+            </div>
+            <div class="foot">
+                <!-- ============================================
+                     CUSTOMIZABLE: 버튼 텍스트
+                     ============================================
+                     AI 요청 예시: "버튼 텍스트를 '다시 보지 않기'로 바꿔줘"
+                -->
+                <button class="btn" onclick="k()">오늘 하루 보지 않기</button>
+                <button class="btn" onclick="c('close_button')">닫기</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        /* ============================================
+           CUSTOMIZABLE: 클릭 시 이동할 링크
+           ============================================
+           AI 요청 예시:
+           - "딥링크를 athlerab://product/999로 바꿔줘"
+           - "웹 링크로 바꿔줘"
+           - "클릭 시 프로모션 페이지로 이동하게 해줘"
+
+           링크 타입 설명:
+           - "deeplink": 앱 내부 딥링크 (예: athlerab://product/123)
+           - "web": 웹 브라우저로 열리는 링크 (예: https://example.com)
+           - 타입 생략 시: URL이 http로 시작하면 자동으로 web, 아니면 deeplink
+        */
+        var imageUrl = "athlerab://product/4448550";
+        var linkType = "deeplink"; // "deeplink" 또는 "web" 또는 생략
+
+        // Bridge ready flag
+        var bridgeReady = false;
+
+        // Braze Bridge Ready Event
+        window.addEventListener("ab.BridgeReady", function() {
+            bridgeReady = true;
+        }, false);
+
+        // Close message with click tracking
+        function c(btnId) {
+            if (bridgeReady && window.brazeBridge) {
+                brazeBridge.logClick(btnId);
+                brazeBridge.closeMessage();
+            } else if (window.appboyBridge) {
+                // Fallback for older SDK
+                appboyBridge.logClick(btnId);
+                appboyBridge.closeMessage();
+            } else {
+                // Preview mode fallback
+                document.getElementById("o").classList.remove("visible");
+            }
+        }
+
+        // Suppress today with click tracking
+        function k() {
+            if (bridgeReady && window.brazeBridge) {
+                brazeBridge.logClick("suppress_today");
+            } else if (window.appboyBridge) {
+                appboyBridge.logClick("suppress_today");
+            }
+            try {
+                localStorage.setItem("bsk", new Date().toDateString())
+            } catch (e) { }
+            c("suppress_today_close");
+        }
+
+        // Image click with tracking and link type detection
+        function handleImageClick() {
+            var btnId = "image_click";
+            if (bridgeReady && window.brazeBridge) {
+                brazeBridge.logClick(btnId);
+            } else if (window.appboyBridge) {
+                appboyBridge.logClick(btnId);
+            }
+
+            if (imageUrl) {
+                // 링크 타입이 지정되지 않았으면 URL로 자동 판단
+                var type = linkType;
+                if (!type) {
+                    type = (imageUrl.indexOf('http') === 0) ? 'web' : 'deeplink';
+                }
+
+                // 웹 링크는 새 창으로, 딥링크는 현재 창으로
+                if (type === 'web') {
+                    window.open(imageUrl, '_blank');
+                } else {
+                    window.location.href = imageUrl;
+                }
+            }
+        }
+
+        // Initialize
+        (function () {
+            // 안드로이드 Safe Area 패딩 - GNB에 가려진다면 아래 주석을 해제하세요
+            /*
+            var isAndroid = /Android/i.test(navigator.userAgent);
+            var foot = document.querySelector(".foot");
+            if (isAndroid && foot) {
+                foot.style.paddingBottom = "56px";
+            }
+            */
+
+            // Attach click handler to image container
+            document.getElementById("img-container").addEventListener("click", handleImageClick);
+
+            /* ============================================
+               CUSTOMIZABLE: 모달 표시 딜레이
+               ============================================
+               AI 요청 예시: "모달을 더 빨리/천천히 나타나게 해줘"
+               500 = 0.5초 딜레이
+               1000 = 1초 딜레이
+               0 = 즉시 표시
+            */
+            setTimeout(function () {
+                document.getElementById("o").classList.add("visible");
+            }, 500);
+        })();
+    </script>
+</body>
+</html>
