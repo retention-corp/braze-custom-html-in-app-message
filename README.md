@@ -14,6 +14,23 @@ Braze용 프로덕션 레디 커스텀 HTML 인앱 메시지 템플릿입니다.
 
 캠페인 런칭 전, 반드시 Braze 테스트 모드에서 실제 기기(iOS/Android)로 테스트할 것을 강력히 권장합니다.
 
+### 🧪 YOLO Mode 실험
+
+**이 프로젝트의 18개 템플릿 중 13개는 AI coding agent가 YOLO mode로 구현했습니다.**
+
+- 처음 5개 템플릿을 수동으로 제작
+- AI에게 나머지 13개 템플릿 아이디어 제안 요청
+- AI가 **테스트 없이** 빠르게 구현 (YOLO = You Only Live Once)
+- 목적: AI coding agent의 크리에이티브 제안 + 빠른 프로토타이핑 능력 실험
+
+**YOLO mode 템플릿 (Phase 2~8):**
+- ⚠️ 실제 기기 테스트 미완료
+- ⚠️ 프로덕션 사용 전 반드시 검증 필요
+- ✅ 빠른 프로토타입 및 아이디어 검증용으로 활용 가능
+- ✅ 기본 구조와 로직은 작동하도록 설계됨
+
+이 실험은 **"AI와 협업하여 얼마나 빠르게 다양한 아이디어를 구현할 수 있는가?"**를 테스트하기 위한 것입니다.
+
 ### 🤖 AI로 커스터마이징하기 (Claude Code)
 
 이 템플릿들은 Claude Code 같은 AI 어시스턴트로 쉽게 커스터마이징할 수 있도록 설계되었습니다. 모든 커스터마이징 가능한 섹션은 AI가 이해하기 쉽도록 한국어 `/* CUSTOMIZABLE */` 주석으로 표시되어 있습니다.
@@ -67,12 +84,34 @@ Braze를 사용하는 한국 기업과의 협업을 항상 환영합니다. 다�
 
 ### 📦 사용 가능한 템플릿
 
-#### 모달 템플릿
+#### 모달 템플릿 (기존 9개)
 - **[Single Image/CTA](./templates/modal/single/)** - 이미지와 CTA 버튼이 있는 간단한 모달
 - **[Carousel](./templates/modal/carousel/)** - 네비게이션이 있는 멀티 슬라이드 캐러셀
 - **[Survey](./templates/modal/survey/)** - 단일/다중 선택 옵션이 있는 인터랙티브 설문조사
 - **[Scratch Card](./templates/modal/scratch-card/)** - 확률 기반 보상이 있는 게임화된 스크래치 카드
 - **[Card Flip](./templates/modal/card-flip/)** - 오퍼/콘텐츠를 드러내는 카드 뒤집기 애니메이션
+
+#### 모달 템플릿 (Phase 1 - 최우선 5개) ⚡
+- **[Countdown Timer](./templates/modal/countdown-timer/)** - 실시간 카운트다운 타이머 (일/시/분/초)
+- **[Referral Code](./templates/modal/referral-code/)** - 추천 코드 생성 및 공유
+- **[Coupon Code](./templates/modal/coupon-code/)** - 쿠폰 코드 표시 및 원클릭 복사
+- **[Daily Check-in](./templates/modal/daily-checkin/)** - 7일 출석 체크 캘린더 with 스트릭
+- **[Spin the Wheel](./templates/modal/spin-wheel/)** - 확률 기반 룰렛 게임
+
+#### 모달 템플릿 (Phase 2-8 - YOLO Mode 13개) 🚀
+- **[Slot Machine](./templates/modal/slot-machine/)** - 3릴 슬롯머신 게임
+- **[Shake to Reveal](./templates/modal/shake-reveal/)** - 흔들기 제스처로 프라이즈 공개
+- **[Gift Box](./templates/modal/gift-box/)** - 6개 선물 상자 선택 게임
+- **[Multi-Step Form](./templates/modal/multi-step-form/)** - 3단계 폼 with 진행바
+- **[Star Rating](./templates/modal/star-rating/)** - 5점 별점 평가 with 피드백
+- **[Before/After Slider](./templates/modal/before-after-slider/)** - 드래그 슬라이더 이미지 비교
+- **[Image Hotspot](./templates/modal/image-hotspot/)** - 클릭 가능한 핫스팟 with 툴팁
+- **[Progress Bar](./templates/modal/progress-bar/)** - 목표 진행률 with 마일스톤 리워드
+- **[Social Proof](./templates/modal/social-proof/)** - 실시간 활동 피드 알림
+- **[App Permission](./templates/modal/app-permission/)** - 푸시 알림 권한 요청
+- **[Feature Tour](./templates/modal/feature-tour/)** - 3단계 기능 소개 온보딩
+- **[Personality Quiz](./templates/modal/personality-quiz/)** - 2단계 성격 퀴즈 with 결과
+- **[Swipe Cards](./templates/modal/swipe-cards/)** - 틴더 스타일 카드 스와이프
 
 #### 풀스크린 템플릿
 - **[Single Image/CTA](./templates/fullscreen/single/)** - 이미지와 CTA가 있는 풀스크린 테이크오버
