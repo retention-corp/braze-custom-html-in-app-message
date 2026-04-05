@@ -57,7 +57,7 @@ var countdownConfig = {
 
 #### CTA 버튼 설정
 ```javascript
-var ctaUrl = "athlerab://promotion/timesale";
+var ctaUrl = "myapp://promotion/timesale";
 var linkType = "deeplink";  // "deeplink" 또는 "web"
 ```
 

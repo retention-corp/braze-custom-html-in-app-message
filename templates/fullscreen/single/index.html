@@ -115,7 +115,7 @@
                  권장: 전체 화면 비율 이미지 (예: 1080x1920)
             -->
             <img
-                src="https://storage.googleapis.com/meta-main-catalog-creatives-20251209/roi-ideaA/v3b_compact_darkband_bigfont_4448550_v4.jpg"
+                src="https://picsum.photos/seed/slide1/500/400"
                 alt="promotion"
                 decoding="async"
             />
@@ -131,16 +131,16 @@
            CUSTOMIZABLE: 클릭 시 이동할 링크
            ============================================
            AI 요청 예시:
-           - "딥링크를 athlerab://product/999로 바꿔줘"
+           - "딥링크를 myapp://product/999로 바꿔줘"
            - "웹 링크로 바꿔줘"
            - "클릭 시 프로모션 페이지로 이동하게 해줘"
 
            링크 타입 설명:
-           - "deeplink": 앱 내부 딥링크 (예: athlerab://product/123)
+           - "deeplink": 앱 내부 딥링크 (예: myapp://product/123)
            - "web": 웹 브라우저로 열리는 링크 (예: https://example.com)
            - 타입 생략 시: URL이 http로 시작하면 자동으로 web, 아니면 deeplink
         */
-        var imageUrl = "athlerab://product/4448550";
+        var imageUrl = "myapp://product/1001";
         var linkType = "deeplink"; // "deeplink" 또는 "web" 또는 생략
 
         // Bridge ready flag

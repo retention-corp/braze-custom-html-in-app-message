@@ -244,7 +244,7 @@
            CUSTOMIZABLE: CTA 버튼 링크 설정
            ============================================
            AI 요청 예시:
-           - "딥링크를 athlerab://sale/winter로 바꿔줘"
+           - "딥링크를 myapp://sale/winter로 바꿔줘"
            - "웹 링크로 변경해줘: https://example.com/sale"
 
            ctaUrl: 클릭 시 이동할 URL
@@ -252,7 +252,7 @@
            - "deeplink" = 앱 내부 딥링크
            - "web" = 브라우저에서 열기
         */
-        var ctaUrl = "athlerab://promotion/timesale";
+        var ctaUrl = "myapp://promotion/timesale";
         var linkType = "deeplink";  // "deeplink" 또는 "web"
 
         /* ============================================

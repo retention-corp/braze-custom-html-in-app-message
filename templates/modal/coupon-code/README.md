@@ -96,7 +96,7 @@ var couponInfo = {
 
 #### 사용하기 버튼 설정
 ```javascript
-var redeemUrl = "athlerab://checkout";
+var redeemUrl = "myapp://checkout";
 var linkType = "deeplink";  // "deeplink" 또는 "web"
 ```
 

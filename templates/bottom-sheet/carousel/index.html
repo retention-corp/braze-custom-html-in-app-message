@@ -166,7 +166,7 @@
            ============================================
            AI 요청 예시:
            - "이미지 URL을 바꿔줘"
-           - "딥링크를 athlerab://product/999로 바꿔줘"
+           - "딥링크를 myapp://product/999로 바꿔줘"
            - "세 번째 슬라이드를 웹 링크로 바꿔줘"
            - "슬라이드를 5개로 늘려줘"
 
@@ -178,33 +178,33 @@
            }
 
            링크 타입 설명:
-           - "deeplink": 앱 내부 딥링크 (예: athlerab://product/123)
+           - "deeplink": 앱 내부 딥링크 (예: myapp://product/123)
            - "web": 웹 브라우저로 열리는 링크 (예: https://example.com)
            - 타입 생략 시: URL이 http로 시작하면 자동으로 web, 아니면 deeplink
         */
         var D = [
             // 슬라이드 1: 앱 딥링크 예시
             {
-                "i": "https://storage.googleapis.com/meta-main-catalog-creatives-20251209/roi-ideaA/v3b_compact_darkband_bigfont_4448550_v4.jpg",
-                "u": "athlerab://product/4448550",
+                "i": "https://picsum.photos/seed/slide1/500/400",
+                "u": "myapp://product/1001",
                 "t": "deeplink"
             },
             // 슬라이드 2: 앱 딥링크 예시
             {
-                "i": "https://storage.googleapis.com/meta-main-catalog-creatives-20251209/roi-ideaA/v3b_compact_darkband_bigfont_4629004_v4.jpg",
-                "u": "athlerab://product/4629004",
+                "i": "https://picsum.photos/seed/slide2/500/400",
+                "u": "myapp://product/1002",
                 "t": "deeplink"
             },
             // 슬라이드 3: 웹 링크 예시
             {
-                "i": "https://storage.googleapis.com/meta-main-catalog-creatives-20251209/roi-ideaA/v3b_compact_darkband_bigfont_4658882_v4.jpg",
+                "i": "https://picsum.photos/seed/slide3/500/400",
                 "u": "https://www.example.com/promotion",
                 "t": "web"
             },
             // 슬라이드 4: 앱 딥링크 예시
             {
-                "i": "https://storage.googleapis.com/meta-main-catalog-creatives-20251209/roi-ideaA/v3b_compact_darkband_bigfont_4460361_v4.jpg",
-                "u": "athlerab://product/4460361",
+                "i": "https://picsum.photos/seed/slide4/500/400",
+                "u": "myapp://product/1004",
                 "t": "deeplink"
             }
             // 슬라이드 추가 방법: 위 형식으로 콤마(,) 추가 후 복사

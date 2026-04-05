@@ -290,13 +290,13 @@
            ============================================
            AI 요청 예시:
            - "공유 링크를 https://app.example.com/invite로 바꿔줘"
-           - "딥링크로 변경: athlerab://invite"
+           - "딥링크로 변경: myapp://invite"
            - "공유 메시지를 바꿔줘"
 
            shareUrl: 공유 버튼 클릭 시 이동할 URL
            - 웹 링크: "https://..."
-           - 딥링크: "athlerab://..."
-           - Liquid: "athlerab://invite?code={{custom_attribute.${referral_code}}}"
+           - 딥링크: "myapp://..."
+           - Liquid: "myapp://invite?code={{custom_attribute.${referral_code}}}"
 
            linkType: 링크 타입
            - "web" = 브라우저에서 열기
@@ -306,7 +306,7 @@
            - iOS/Android의 네이티브 공유 시트에 사용
         */
         var shareConfig = {
-            shareUrl: "athlerab://invite",
+            shareUrl: "myapp://invite",
             linkType: "deeplink",  // "deeplink" 또는 "web"
             shareMessage: "나의 추천 코드로 가입하고 5,000₩ 받으세요! 코드: " + referralCode
         };

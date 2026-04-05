@@ -50,12 +50,12 @@
     <script>
         /* CUSTOMIZABLE: 룰렛 프라이즈 설정 */
         var prizes = [
-            { emoji: "🎁", name: "5,000P", probability: 0.3, eventName: "spin_win_5000p", claimUrl: "athlerab://prize/5000p" },
-            { emoji: "💎", name: "10,000P", probability: 0.2, eventName: "spin_win_10000p", claimUrl: "athlerab://prize/10000p" },
-            { emoji: "🏆", name: "20,000P", probability: 0.15, eventName: "spin_win_20000p", claimUrl: "athlerab://prize/20000p" },
-            { emoji: "👑", name: "50,000P", probability: 0.1, eventName: "spin_win_50000p", claimUrl: "athlerab://prize/50000p" },
-            { emoji: "💰", name: "100,000P", probability: 0.05, eventName: "spin_win_100000p", claimUrl: "athlerab://prize/100000p" },
-            { emoji: "🎉", name: "다시 도전", probability: 0.2, eventName: "spin_try_again", claimUrl: "athlerab://spin/retry" }
+            { emoji: "🎁", name: "5,000P", probability: 0.3, eventName: "spin_win_5000p", claimUrl: "myapp://prize/5000p" },
+            { emoji: "💎", name: "10,000P", probability: 0.2, eventName: "spin_win_10000p", claimUrl: "myapp://prize/10000p" },
+            { emoji: "🏆", name: "20,000P", probability: 0.15, eventName: "spin_win_20000p", claimUrl: "myapp://prize/20000p" },
+            { emoji: "👑", name: "50,000P", probability: 0.1, eventName: "spin_win_50000p", claimUrl: "myapp://prize/50000p" },
+            { emoji: "💰", name: "100,000P", probability: 0.05, eventName: "spin_win_100000p", claimUrl: "myapp://prize/100000p" },
+            { emoji: "🎉", name: "다시 도전", probability: 0.2, eventName: "spin_try_again", claimUrl: "myapp://spin/retry" }
         ];
         var linkType = "deeplink";
         var colors = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#FFA07A", "#98D8C8", "#F7DC6F"];

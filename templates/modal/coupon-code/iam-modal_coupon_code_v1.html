@@ -343,14 +343,14 @@
            ============================================
            AI 요청 예시:
            - "사용 URL을 https://shop.example.com/cart로 바꿔줘"
-           - "딥링크로 변경: athlerab://checkout"
+           - "딥링크로 변경: myapp://checkout"
 
            redeemUrl: 사용하기 버튼 클릭 시 이동할 URL
            linkType: 링크 타입
            - "deeplink" = 앱 내부 딥링크
            - "web" = 브라우저에서 열기
         */
-        var redeemUrl = "athlerab://checkout";
+        var redeemUrl = "myapp://checkout";
         var linkType = "deeplink";  // "deeplink" 또는 "web"
 
         /* ============================================

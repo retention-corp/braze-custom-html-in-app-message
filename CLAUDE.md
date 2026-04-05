@@ -109,8 +109,8 @@ if (/Android/i.test(navigator.userAgent)) {
 **Hardcoded (static campaigns):**
 ```javascript
 var data = [
-    {"img": "https://...", "link": "athlerab://product/123"},
-    {"img": "https://...", "link": "athlerab://product/456"}
+    {"img": "https://...", "link": "myapp://product/123"},
+    {"img": "https://...", "link": "myapp://product/456"}
 ];
 ```
 
@@ -132,7 +132,7 @@ element.onclick = function() {
 };
 ```
 
-**Supported schemas**: `athlerab://`, `https://`, `intent://`
+**Supported schemas**: `myapp://`, `https://`, `intent://`
 
 ### "Don't Show Today" Suppression
 
@@ -364,7 +364,7 @@ Product carousel in bottom sheet modal
 var D = [
     {
         "i": "image_url",           // 이미지 URL
-        "u": "athlerab://product/123", // 링크 URL
+        "u": "myapp://product/123", // 링크 URL
         "t": "deeplink"             // 링크 타입: "deeplink" 또는 "web"
     }
 ];
@@ -380,7 +380,7 @@ var D = [
 | Element | AI Request Example (Korean) | Location |
 |---------|----------------------------|----------|
 | **이미지 URL** | "이미지 URL을 바꿔줘" | Line 140-181 |
-| **딥링크** | "딥링크를 athlerab://product/999로 바꿔줘" | Line 140-181 |
+| **딥링크** | "딥링크를 myapp://product/999로 바꿔줘" | Line 140-181 |
 | **웹링크 추가** | "세 번째 슬라이드를 웹 링크로 바꿔줘" | Line 140-181 |
 | **슬라이드 개수** | "슬라이드를 5개로 늘려줘" | Line 140-181 |
 | **버튼 텍스트** | "버튼 텍스트를 '다시 보지 않기'로 바꿔줘" | Line 158-159 |
@@ -788,17 +788,17 @@ open iam-bottom_sheet_carousel_v5.md
 **Pattern 1: Update Product Images and Links**
 ```
 "슬라이드 4개 모두 업데이트:
-1. 이미지: [URL1], 딥링크: athlerab://product/111
-2. 이미지: [URL2], 딥링크: athlerab://product/222
-3. 이미지: [URL3], 딥링크: athlerab://product/333
-4. 이미지: [URL4], 딥링크: athlerab://product/444"
+1. 이미지: [URL1], 딥링크: myapp://product/111
+2. 이미지: [URL2], 딥링크: myapp://product/222
+3. 이미지: [URL3], 딥링크: myapp://product/333
+4. 이미지: [URL4], 딥링크: myapp://product/444"
 ```
 
 **Pattern 2: Mix Deep Links and Web Links**
 ```
 "슬라이드 1-2는 앱 딥링크, 슬라이드 3은 웹 링크로:
-1. athlerab://product/100
-2. athlerab://product/200
+1. myapp://product/100
+2. myapp://product/200
 3. https://promotion.example.com (웹 링크)"
 ```
 
@@ -884,7 +884,7 @@ Braze has no built-in version control. Use these patterns:
 
 - **`.md` extension**: GitHub renders HTML in markdown files for easier preview
 - **Korean button text**: Common in templates (e.g., "오늘 하루 보지 않기" = "Don't show today")
-- **`athlerab://` deep links**: Custom app scheme for client's app
+- **`myapp://` deep links**: Custom app scheme for client's app
 - **Google Cloud Storage URLs**: Images hosted on `storage.googleapis.com`
 - **Debug tags**: All templates should include version identifier in top-right corner
 

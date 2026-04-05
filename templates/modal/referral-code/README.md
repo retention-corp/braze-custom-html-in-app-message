@@ -78,7 +78,7 @@ var statsConfig = {
 #### 공유 버튼 설정
 ```javascript
 var shareConfig = {
-    shareUrl: "athlerab://invite",
+    shareUrl: "myapp://invite",
     linkType: "deeplink",  // "deeplink" 또는 "web"
     shareMessage: "나의 추천 코드로 가입하고 5,000₩ 받으세요! 코드: " + referralCode
 };
@@ -180,7 +180,7 @@ var statsConfig = {
 #### 동적 공유 URL
 ```javascript
 var shareConfig = {
-    shareUrl: "athlerab://invite?code={{custom_attribute.${referral_code}}}",
+    shareUrl: "myapp://invite?code={{custom_attribute.${referral_code}}}",
     linkType: "deeplink",
     shareMessage: "코드: {{custom_attribute.${referral_code}}}"
 };
